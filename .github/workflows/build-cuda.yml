@@ -20,20 +20,24 @@ jobs:
     steps:
       - name: Checkout build repository
         uses: actions/checkout@v4
-
+      
       - name: Resolve OMPC revision
         id: revision
         env:
           OMPC_REF: ${{ inputs.ompc_ref }}
         run: |
-          git clone --filter=blob:none \
+          OMPC_REF="$(echo "$OMPC_REF" | xargs)"
+          SHA=$(git ls-remote \
             https://github.com/OpenMP-Cluster/llvm-project.git \
-            /tmp/ompc-source
+            "refs/heads/$OMPC_REF" | awk '{print $1}')
 
-          cd /tmp/ompc-source
-          git fetch origin "$OMPC_REF"
-          SHA=$(git rev-parse FETCH_HEAD^{commit})
+          if [ -z "$SHA" ]; then
+            echo "ERROR: Branch not found: $OMPC_REF"
+            exit 1
+          fi
+
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "Building OMPC branch: $OMPC_REF"
           echo "Building OMPC commit: $SHA"
 
       - name: Free runner disk space
