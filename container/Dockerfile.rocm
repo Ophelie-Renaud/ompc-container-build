@@ -122,7 +122,8 @@ ENV LD_LIBRARY_PATH=/opt/rocm-7.2.0/lib:/opt/rocm-7.2.0/lib64:/opt/mpich/lib:/op
 
 ARG OMPC_SOURCE_REVISION
 
-RUN dnf config-manager --set-enabled crb && \
+RUN dnf -y install dnf-plugins-core && \
+    dnf config-manager --set-enabled crb && \
     dnf -y install \
         cmake \
         ninja-build \
